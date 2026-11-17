@@ -1,0 +1,6 @@
+{
+  "name": "MIS Department — Erbil Technical Administration Institute",
+  "description": "Official trilingual (Kurdish, Arabic, English) website for the Management Information Systems (MIS) Department at Erbil Technical Administration Institute (EPU), powered by Python and HTML/CSS/JavaScript.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

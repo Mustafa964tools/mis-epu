@@ -1,0 +1,214 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 0. Global Safety Net (Default-Deny Catch-All)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Connectivity probe endpoint for startup testConnection()
+    match /test/connection {
+      allow get: if true;
+    }
+
+    // 1. Hardened Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isVerifiedUser() && (
+        request.auth.token.email == 'mustafanahroomar@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // 2. Entity Validation Blueprints (Anti-Update-Gap)
+    function isValidAdmin(data) {
+      return data.keys().hasAll(['uid', 'role', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'role', 'createdAt', 'updatedAt'])
+        && data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.role is string && data.role.size() >= 5 && data.role.size() <= 20 && data.role in ['admin', 'super_admin']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidNews(data) {
+      return data.keys().hasAll([
+          'category', 'image_key', 'image_url', 'published_at',
+          'title_ku', 'title_ar', 'title_en',
+          'body_ku', 'body_ar', 'body_en',
+          'authorId', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'category', 'image_key', 'image_url', 'published_at',
+          'title_ku', 'title_ar', 'title_en',
+          'body_ku', 'body_ar', 'body_en',
+          'authorId', 'createdAt', 'updatedAt'
+        ])
+        && data.category is string && data.category.size() >= 5 && data.category.size() <= 20
+        && data.category in ['announcement', 'event', 'notice', 'Announcement', 'Academic', 'Seminar', 'Activity']
+        && data.image_key is string && data.image_key.size() >= 3 && data.image_key.size() <= 16
+        && data.image_key in ['seminar', 'lab', 'campus', 'hero']
+        && data.image_url is string && data.image_url.size() <= 900000
+        && data.published_at is string && data.published_at.size() == 10 && data.published_at.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.title_ku is string && data.title_ku.size() >= 2 && data.title_ku.size() <= 300
+        && data.title_ar is string && data.title_ar.size() >= 2 && data.title_ar.size() <= 300
+        && data.title_en is string && data.title_en.size() >= 2 && data.title_en.size() <= 300
+        && data.body_ku is string && data.body_ku.size() >= 5 && data.body_ku.size() <= 8000
+        && data.body_ar is string && data.body_ar.size() >= 5 && data.body_ar.size() <= 8000
+        && data.body_en is string && data.body_en.size() >= 5 && data.body_en.size() <= 8000
+        && data.authorId is string && data.authorId.size() >= 1 && data.authorId.size() <= 128 && data.authorId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.authorId == request.auth.uid
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidStaff(data) {
+      return data.keys().hasAll([
+          'name', 'name_ku', 'name_ar', 'name_en',
+          'role_key', 'academic_email', 'photo_url', 'display_order',
+          'authorId', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'name', 'name_ku', 'name_ar', 'name_en',
+          'role_key', 'academic_email', 'photo_url', 'display_order',
+          'authorId', 'createdAt', 'updatedAt'
+        ])
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 160
+        && data.name_ku is string && data.name_ku.size() >= 2 && data.name_ku.size() <= 160
+        && data.name_ar is string && data.name_ar.size() >= 2 && data.name_ar.size() <= 160
+        && data.name_en is string && data.name_en.size() >= 2 && data.name_en.size() <= 160
+        && data.role_key is string && data.role_key.size() >= 4 && data.role_key.size() <= 16
+        && data.role_key in ['head', 'doctor', 'lecturer']
+        && data.academic_email is string && data.academic_email.size() >= 5 && data.academic_email.size() <= 160
+        && data.photo_url is string && data.photo_url.size() <= 900000
+        && data.display_order is number && data.display_order >= 1 && data.display_order <= 1000
+        && data.authorId is string && data.authorId.size() >= 1 && data.authorId.size() <= 128 && data.authorId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.authorId == request.auth.uid
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidContactMessage(data) {
+      return data.keys().hasAll([
+          'name', 'senderEmail', 'subject', 'message',
+          'status', 'created_at', 'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'name', 'senderEmail', 'subject', 'message',
+          'status', 'created_at', 'createdAt'
+        ])
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 120
+        && data.senderEmail is string && data.senderEmail.size() >= 5 && data.senderEmail.size() <= 160
+        && data.subject is string && data.subject.size() <= 200
+        && data.message is string && data.message.size() >= 5 && data.message.size() <= 4000
+        && data.status is string && data.status.size() >= 4 && data.status.size() <= 10
+        && data.status in ['unread', 'read']
+        && data.created_at is string && data.created_at.size() >= 10 && data.created_at.size() <= 25
+        && data.createdAt is timestamp;
+    }
+
+    // 3. Collection Rules
+    match /admins/{adminId} {
+      allow get: if isVerifiedUser() && isValidId(adminId) && (request.auth.uid == adminId || isAdmin());
+      allow list: if isAdmin() && existing().role in ['admin', 'super_admin'];
+      allow create: if isAdmin()
+        && isValidId(adminId)
+        && isValidAdmin(incoming())
+        && incoming().uid == adminId
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isAdmin()
+        && isValidId(adminId)
+        && isValidAdmin(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['role', 'updatedAt']);
+      allow delete: if isAdmin() && isValidId(adminId);
+    }
+
+    match /news/{newsId} {
+      allow get: if isValidId(newsId);
+      allow list: if existing().category in ['announcement', 'event', 'notice', 'Announcement', 'Academic', 'Seminar', 'Activity'];
+      allow create: if isAdmin()
+        && isValidId(newsId)
+        && isValidNews(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isAdmin()
+        && isValidId(newsId)
+        && isValidNews(incoming())
+        && incoming().authorId == existing().authorId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'category', 'image_key', 'image_url', 'published_at',
+          'title_ku', 'title_ar', 'title_en',
+          'body_ku', 'body_ar', 'body_en', 'updatedAt'
+        ]);
+      allow delete: if isAdmin() && isValidId(newsId);
+    }
+
+    match /staff/{staffId} {
+      allow get: if isValidId(staffId);
+      allow list: if existing().role_key in ['head', 'doctor', 'lecturer'];
+      allow create: if isAdmin()
+        && isValidId(staffId)
+        && isValidStaff(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isAdmin()
+        && isValidId(staffId)
+        && isValidStaff(incoming())
+        && incoming().authorId == existing().authorId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'name', 'name_ku', 'name_ar', 'name_en',
+          'role_key', 'academic_email', 'photo_url', 'display_order', 'updatedAt'
+        ]);
+      allow delete: if isAdmin() && isValidId(staffId);
+    }
+
+    match /messages/{messageId} {
+      allow get: if isAdmin() && isValidId(messageId);
+      allow list: if isAdmin() && existing().status in ['unread', 'read'];
+      allow create: if isValidId(messageId)
+        && isValidContactMessage(incoming())
+        && incoming().status == 'unread'
+        && incoming().createdAt == request.time;
+      allow update: if isAdmin()
+        && isValidId(messageId)
+        && isValidContactMessage(incoming())
+        && incoming().name == existing().name
+        && incoming().senderEmail == existing().senderEmail
+        && incoming().subject == existing().subject
+        && incoming().message == existing().message
+        && incoming().created_at == existing().created_at
+        && incoming().createdAt == existing().createdAt
+        && incoming().diff(existing()).affectedKeys().hasOnly(['status'])
+        && (existing().status != 'read' || isAdmin());
+      allow delete: if isAdmin() && isValidId(messageId);
+    }
+  }
+}

@@ -1,0 +1,298 @@
+{
+  "entities": {
+    "Admin": {
+      "title": "Admin",
+      "description": "Authorized department administrator record.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the administrator.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "role": {
+          "type": "string",
+          "description": "Administrative role level.",
+          "enum": ["admin", "super_admin"],
+          "minLength": 5,
+          "maxLength": 20
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when admin record was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when admin record was last updated."
+        }
+      },
+      "required": ["uid", "role", "createdAt", "updatedAt"]
+    },
+    "NewsItem": {
+      "title": "NewsItem",
+      "description": "Trilingual department news, announcement, seminar, or scientific activity.",
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string",
+          "description": "News category classification.",
+          "enum": ["announcement", "event", "notice", "Announcement", "Academic", "Seminar", "Activity"],
+          "minLength": 5,
+          "maxLength": 20
+        },
+        "image_key": {
+          "type": "string",
+          "description": "Fallback preset image key.",
+          "enum": ["seminar", "lab", "campus", "hero"],
+          "minLength": 3,
+          "maxLength": 16
+        },
+        "image_url": {
+          "type": "string",
+          "description": "Custom image path or compressed data URL.",
+          "minLength": 0,
+          "maxLength": 900000
+        },
+        "published_at": {
+          "type": "string",
+          "description": "ISO date string (YYYY-MM-DD).",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "title_ku": {
+          "type": "string",
+          "description": "Kurdish Sorani headline.",
+          "minLength": 2,
+          "maxLength": 300
+        },
+        "title_ar": {
+          "type": "string",
+          "description": "Arabic headline.",
+          "minLength": 2,
+          "maxLength": 300
+        },
+        "title_en": {
+          "type": "string",
+          "description": "English headline.",
+          "minLength": 2,
+          "maxLength": 300
+        },
+        "body_ku": {
+          "type": "string",
+          "description": "Kurdish Sorani article body.",
+          "minLength": 5,
+          "maxLength": 8000
+        },
+        "body_ar": {
+          "type": "string",
+          "description": "Arabic article body.",
+          "minLength": 5,
+          "maxLength": 8000
+        },
+        "body_en": {
+          "type": "string",
+          "description": "English article body.",
+          "minLength": 5,
+          "maxLength": 8000
+        },
+        "authorId": {
+          "type": "string",
+          "description": "UID of the admin who published the item.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "category",
+        "image_key",
+        "image_url",
+        "published_at",
+        "title_ku",
+        "title_ar",
+        "title_en",
+        "body_ku",
+        "body_ar",
+        "body_en",
+        "authorId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "StaffMember": {
+      "title": "StaffMember",
+      "description": "Academic faculty member in the Management Information Systems department.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Default full name.",
+          "minLength": 2,
+          "maxLength": 160
+        },
+        "name_ku": {
+          "type": "string",
+          "description": "Kurdish Sorani full name with academic title.",
+          "minLength": 2,
+          "maxLength": 160
+        },
+        "name_ar": {
+          "type": "string",
+          "description": "Arabic full name with academic title.",
+          "minLength": 2,
+          "maxLength": 160
+        },
+        "name_en": {
+          "type": "string",
+          "description": "English full name with academic title.",
+          "minLength": 2,
+          "maxLength": 160
+        },
+        "role_key": {
+          "type": "string",
+          "description": "Academic role classification.",
+          "enum": ["head", "doctor", "lecturer"],
+          "minLength": 4,
+          "maxLength": 16
+        },
+        "academic_email": {
+          "type": "string",
+          "description": "Official university email address.",
+          "minLength": 5,
+          "maxLength": 160
+        },
+        "photo_url": {
+          "type": "string",
+          "description": "Portrait image path or compressed data URL.",
+          "minLength": 0,
+          "maxLength": 900000
+        },
+        "display_order": {
+          "type": "number",
+          "description": "Numeric sort order in faculty directory."
+        },
+        "authorId": {
+          "type": "string",
+          "description": "UID of the admin who saved the record.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "name",
+        "name_ku",
+        "name_ar",
+        "name_en",
+        "role_key",
+        "academic_email",
+        "photo_url",
+        "display_order",
+        "authorId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ContactMessage": {
+      "title": "ContactMessage",
+      "description": "Visitor inquiry submitted via the department contact form.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Sender full name.",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "senderEmail": {
+          "type": "string",
+          "description": "Sender email address (PII restricted to admins).",
+          "minLength": 5,
+          "maxLength": 160
+        },
+        "subject": {
+          "type": "string",
+          "description": "Inquiry subject line.",
+          "minLength": 0,
+          "maxLength": 200
+        },
+        "message": {
+          "type": "string",
+          "description": "Inquiry body text.",
+          "minLength": 5,
+          "maxLength": 4000
+        },
+        "status": {
+          "type": "string",
+          "description": "Message read status.",
+          "enum": ["unread", "read"],
+          "minLength": 4,
+          "maxLength": 10
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Display date string (YYYY-MM-DD HH:MM).",
+          "minLength": 10,
+          "maxLength": 25
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        }
+      },
+      "required": [
+        "name",
+        "senderEmail",
+        "subject",
+        "message",
+        "status",
+        "created_at",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/Admin" },
+      "description": "Authorized department administrators."
+    },
+    "/news/{newsId}": {
+      "schema": { "$ref": "#/entities/NewsItem" },
+      "description": "Public trilingual department news and announcements managed by admins."
+    },
+    "/staff/{staffId}": {
+      "schema": { "$ref": "#/entities/StaffMember" },
+      "description": "Public academic staff directory managed by admins."
+    },
+    "/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/ContactMessage" },
+      "description": "Private contact form submissions readable and deletable only by admins."
+    }
+  }
+}
